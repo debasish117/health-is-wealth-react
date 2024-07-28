@@ -11,7 +11,10 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useContext } from 'react';
+import { userAuthContext } from '../context/context';
+import axios from 'axios';
+import { baseUrl } from '../constants/AppCredentials';
 
 function Copyright(props) {
   return (
@@ -27,13 +30,25 @@ function Copyright(props) {
 }
 
 export default function Login() {
+  const value = useContext(userAuthContext)
+  console.log(value)
   const handleSubmit = (event) => {
+    console.log("sumit-----")
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const { email, password } = data;
     console.log({
       email: data.get('email'),
       password: data.get('password'),
     });
+    axios.post(`${baseUrl}/api/v1/users/sign_in`, {
+      email: email,
+      password: password
+    }).then((response) => {
+      console.log("Response", response)
+    }).catch((error) => {
+      console.log("Error--", error)
+    })
   };
 
   return (
@@ -46,6 +61,9 @@ export default function Login() {
           flexDirection: 'column',
           alignItems: 'center',
         }}
+        onSubmit={handleSubmit}
+        component="form"
+        noValidate
       >
         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <LockOutlinedIcon />
@@ -53,7 +71,7 @@ export default function Login() {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required

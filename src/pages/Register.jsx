@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useState} from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,6 +12,9 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import axios from 'axios';
+import { baseUrl } from '../constants/AppCredentials';
+import { useNavigate } from 'react-router-dom';
 
 function Copyright(props) {
   return (
@@ -26,15 +29,32 @@ function Copyright(props) {
   );
 }
 
-export default function SignUp() {
+export default function SignUp(props) {
+  const navigate = useNavigate();
+  const [signupData, setSignupData] = useState({
+    email: "",
+    password: "",
+    name: "",
+    successMessage: ""
+  })
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+    axios.post(`${baseUrl}/signup`, { "user": { email: data.get('email'), password: data.get('password'), name: data.get('firstName') } }).then((response) => {
+      if (response.data.status.code == 200) {
+        console.log("hey-------")
+        localStorage.setItem("userToken", response.data.status.token);
+        redirectToHome();
+      }
+      console.log("Registration response", response)
+    }).catch((error) => {
+      console.log("Error in registartion", error)
+    })
+  }
+
+  const redirectToHome = () => {
+    navigate("/login");
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -46,6 +66,7 @@ export default function SignUp() {
           flexDirection: 'column',
           alignItems: 'center',
         }}
+        component="form" noValidate onSubmit={handleSubmit}
       >
         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <LockOutlinedIcon />
@@ -53,7 +74,7 @@ export default function SignUp() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box sx={{ mt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -114,7 +135,7 @@ export default function SignUp() {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link href="/login" variant="body2">
+              <Link href="/" variant="body2">
                 Already have an account? Sign in
               </Link>
             </Grid>
